@@ -1,0 +1,22 @@
+# 前端依赖
+node_modules/
+dist/
+pnpm-lock.yaml
+yarn.lock
+package-lock.json
+
+# 后端编译产物
+src-tauri/target/
+src-tauri/Cargo.lock
+
+# 系统文件
+.DS_Store
+Thumbs.db
+
+# 开发工具
+.vscode/
+.idea/
+
+# 临时文件
+*.log
+*.tmp
