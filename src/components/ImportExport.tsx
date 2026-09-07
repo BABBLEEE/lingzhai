@@ -1,5 +1,5 @@
 import React, { useRef } from 'react';
-import { exportData, importData } from '../lib/tauri';
+import { exportDataWithDialog, importData } from '../lib/tauri';
 import toast from 'react-hot-toast';
 
 interface Props {
@@ -10,20 +10,16 @@ export default function ImportExport({ onImportComplete }: Props) {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleExport = async (format: 'json' | 'txt') => {
-    try {
-      const content = await exportData(format);
-      const blob = new Blob([content], { type: 'text/plain' });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `lingzhai_backup.${format === 'json' ? 'json' : 'txt'}`;
-      a.click();
-      URL.revokeObjectURL(url);
+  try {
+    const success = await exportDataWithDialog(format);
+    if (success) {
       toast.success('导出成功');
-    } catch (e) {
-      toast.error('导出失败');
     }
-  };
+    // 如果 success 为 false，说明用户取消了，不提示任何消息
+  } catch (e) {
+    toast.error('导出失败：' + e);
+  }
+};
 
   const handleImport = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];

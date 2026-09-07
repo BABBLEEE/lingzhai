@@ -4,8 +4,16 @@ pub mod db;
 use tauri::Manager;
 use std::sync::Mutex;
 use rusqlite::Connection;
+use std::fs;
+use std::path::PathBuf;
+
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
+
+#[tauri::command]
+fn write_text_file(path: std::path::PathBuf, content: String) -> Result<(), String> {
+    std::fs::write(path, content).map_err(|e| e.to_string())
+}
 pub fn run() {
     tauri::Builder::default()
         .setup(|app| {
@@ -41,6 +49,8 @@ pub fn run() {
         // .plugin(tauri_plugin_autostart::init(...))
         // .plugin(tauri_plugin_system_tray::init())
         .plugin(tauri_plugin_clipboard_manager::init())
+        .plugin(tauri_plugin_dialog::init())
+        .plugin(tauri_plugin_fs::init())
         .invoke_handler(tauri::generate_handler![
             db::get_all_excerpts,
             db::insert_excerpt,
@@ -49,6 +59,8 @@ pub fn run() {
             db::delete_all_excerpts,
             db::export_data,
             db::import_data,
+            db::get_latest_excerpt,
+            write_text_file,
             // ===== 移除对 tray 函数的引用 =====
             // tray::toggle_window_visibility,
             // tray::set_autostart,

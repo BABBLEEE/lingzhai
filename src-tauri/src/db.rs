@@ -49,7 +49,19 @@ fn row_to_excerpt(row: &rusqlite::Row) -> Result<Excerpt, rusqlite::Error> {
         created_at: row.get("created_at")?,
     })
 }
-
+#[tauri::command]
+pub fn get_latest_excerpt(state: State<Mutex<Connection>>) -> Result<Option<Excerpt>, String> {
+    let conn = state.lock().map_err(|e| e.to_string())?;
+    let mut stmt = conn
+        .prepare("SELECT id, content, note, tags, starred, created_at FROM excerpts ORDER BY created_at DESC LIMIT 1")
+        .map_err(|e| e.to_string())?;
+    let mut rows = stmt.query_map([], row_to_excerpt).map_err(|e| e.to_string())?;
+    if let Some(row) = rows.next() {
+        Ok(Some(row.map_err(|e| e.to_string())?))
+    } else {
+        Ok(None)
+    }
+}
 #[tauri::command]
 pub fn get_all_excerpts(state: State<Mutex<Connection>>) -> Result<Vec<Excerpt>, String> {
     let conn = state.lock().map_err(|e| e.to_string())?;
